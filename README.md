@@ -1,0 +1,2 @@
+# Tempmail
+Tempmail generator
