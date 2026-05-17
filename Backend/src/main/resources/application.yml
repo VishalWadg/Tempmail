@@ -1,0 +1,23 @@
+spring:
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+server:
+  port: 8080
+
+tempmail:
+  domain: ${TEMPMAIL_DOMAIN:localhost}
+  smtp:
+    port: ${TEMPMAIL_SMTP_PORT:2525}
+  ttl-minutes: ${TEMPMAIL_TTL_MINUTES:30}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: always

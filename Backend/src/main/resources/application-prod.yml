@@ -1,0 +1,11 @@
+tempmail:
+  domain: ${TEMPMAIL_DOMAIN}
+  smtp:
+    port: ${TEMPMAIL_SMTP_PORT:2525}
+  ttl-minutes: ${TEMPMAIL_TTL_MINUTES:30}
+
+spring:
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}

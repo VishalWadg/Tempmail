@@ -1,0 +1,11 @@
+tempmail:
+  domain: localhost
+  smtp:
+    port: 2525
+  ttl-minutes: 30
+
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
