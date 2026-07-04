@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Card } from '@/components/ui/card'
+import { ThemeController } from '@/components/ThemeController'
 
 function App() {
   const [email] = useState('example@tempmail.com')
@@ -12,8 +13,8 @@ function App() {
           <span className="text-xl font-bold tracking-tight text-primary">TempMail</span>
         </div>
         <div>
-          {/* Theme switcher will go here */}
-          <span className="text-sm text-muted-foreground">Theme Settings</span>
+          {/* Theme switcher */}
+          <ThemeController />
         </div>
       </header>
 
