@@ -1,63 +1,87 @@
-import themeData from 'material-theme.json'
-import { colord } from 'colord';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react'
+import themeData from '../material-theme.json'
 
-type SchemeKey = keyof typeof themeData.schemes;
-type ThemeMode = 'light' | 'dark';
-type ContrastLevel = 'standard' | 'medium' | 'high';
+type ThemePreference = 'light' | 'dark'
+type ContrastLevel = 'standard' | 'medium' | 'high'
 
 type ThemeContextType = {
-  themeMode: ThemeMode
+  themePreference: ThemePreference
   contrastLevel: ContrastLevel
-  setThemeMode: (mode: ThemeMode) => void
+  setThemePreference: (pref: ThemePreference) => void
   setContrastLevel: (level: ContrastLevel) => void
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
+// Safe localStorage wrapper to prevent crashes in restricted privacy contexts
+const safeGetItem = (key: string): string | null => {
+  try {
+    return localStorage.getItem(key)
+  } catch (e) {
+    console.warn('localStorage read blocked by security/privacy settings:', e)
+    return null
+  }
+}
+
+const safeSetItem = (key: string, value: string): void => {
+  try {
+    localStorage.setItem(key, value)
+  } catch (e) {
+    console.warn('localStorage write blocked by security/privacy settings:', e)
+  }
+}
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
-    const saved = localStorage.getItem('tempmail-theme-mode') as ThemeMode
+  const [themePreference, setThemePreferenceState] = useState<ThemePreference>(() => {
+    const saved = safeGetItem('tempmail-theme-preference') as ThemePreference
     if (saved) return saved
+    // Initial fallback to system preference
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   })
 
-  const [contrastLevel, setContrastLevel] = useState<ContrastLevel>(() => {
-    return (localStorage.getItem('tempmail-contrast-level') as ContrastLevel) || 'standard'
+  const [contrastLevel, setContrastLevelState] = useState<ContrastLevel>(() => {
+    return (safeGetItem('tempmail-contrast-level') as ContrastLevel) || 'standard'
   })
 
-  // Listen for OS theme changes
+  // Setter wrapper that persists preference
+  const setThemePreference = (pref: ThemePreference) => {
+    setThemePreferenceState(pref)
+    safeSetItem('tempmail-theme-preference', pref)
+  }
+
+  // Setter wrapper that persists contrast
+  const setContrastLevel = (level: ContrastLevel) => {
+    setContrastLevelState(level)
+    safeSetItem('tempmail-contrast-level', level)
+  }
+
+  // Effect to apply mapped CSS variables to root based on active preference
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    const handleChange = (e: MediaQueryListEvent) => {
-      if (!localStorage.getItem('tempmail-theme-mode')) {
-        setThemeMode(e.matches ? 'dark' : 'light')
-      }
+    let schemeKey = ''
+    if (themePreference === 'light') {
+      if (contrastLevel === 'standard') schemeKey = 'light'
+      else if (contrastLevel === 'medium') schemeKey = 'light-medium-contrast'
+      else schemeKey = 'light-high-contrast'
+    } else {
+      if (contrastLevel === 'standard') schemeKey = 'dark'
+      else if (contrastLevel === 'medium') schemeKey = 'dark-medium-contrast'
+      else schemeKey = 'dark-high-contrast'
     }
-    mediaQuery.addEventListener('change', handleChange)
-    return () => mediaQuery.removeEventListener('change', handleChange)
-  }, [])
 
-  useEffect(() => {
-    localStorage.setItem('tempmail-theme-mode', themeMode)
-    localStorage.setItem('tempmail-contrast-level', contrastLevel)
-
-    // Build the string and safely cast it to the precise type TypeScript expects
-    const schemeString = `${themeMode}${contrastLevel === 'standard' ? '' : `-${contrastLevel}-contrast`}`
-    const schemeKey = schemeString as SchemeKey
-
+    // @ts-ignore
     const scheme = themeData.schemes[schemeKey]
     if (!scheme) return
 
     const root = document.documentElement
 
-    if (themeMode === 'dark') {
+    // Toggle .dark class for Tailwind dark: variants compatibility
+    if (themePreference === 'dark') {
       root.classList.add('dark')
     } else {
       root.classList.remove('dark')
     }
 
+    // Map Material Design tokens to shadcn CSS variable tokens
     const mapping = {
       background: scheme.background,
       foreground: scheme.onBackground,
@@ -73,17 +97,21 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       'muted-foreground': scheme.onSurfaceVariant,
       accent: scheme.primaryContainer,
       'accent-foreground': scheme.onPrimaryContainer,
+      destructive: scheme.error,
+      'destructive-foreground': scheme.onError,
       border: scheme.outlineVariant,
       input: scheme.outlineVariant,
       ring: scheme.primary,
     }
+
+    // Inject styles dynamically into :root
     Object.entries(mapping).forEach(([key, value]) => {
       root.style.setProperty(`--${key}`, value)
     })
-  }, [themeMode, contrastLevel])
+  }, [themePreference, contrastLevel])
 
   return (
-    <ThemeContext.Provider value={{ themeMode, contrastLevel, setThemeMode, setContrastLevel }}>
+    <ThemeContext.Provider value={{ themePreference, contrastLevel, setThemePreference, setContrastLevel }}>
       {children}
     </ThemeContext.Provider>
   )

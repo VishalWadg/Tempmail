@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { ThemeController } from '@/components/ThemeController'
+import { AdGutter } from './components/AdGutter'
 
 function App() {
   const [email] = useState('example@tempmail.com')
@@ -22,10 +23,7 @@ function App() {
       <div className="flex-1 grid grid-cols-1 xl:grid-cols-[300px_1fr_300px] gap-6 max-w-[1600px] w-full mx-auto px-6 py-8">
         
         {/* Left Ad Gutter */}
-        <aside className="hidden xl:flex flex-col items-center justify-center border border-dashed border-border rounded-lg bg-card/50 min-h-[600px] text-center p-4">
-          <span className="text-xs font-semibold tracking-wider uppercase text-muted-foreground/60 mb-2">Advertisement</span>
-          <div className="text-sm text-muted-foreground/80">300 x 600 Banner Space</div>
-        </aside>
+         <AdGutter position="left" />
 
         {/* Center Panel (Main Application Workspace) */}
         <main className="flex flex-col gap-6 w-full">
@@ -42,10 +40,7 @@ function App() {
         </main>
 
         {/* Right Ad Gutter */}
-        <aside className="hidden xl:flex flex-col items-center justify-center border border-dashed border-border rounded-lg bg-card/50 min-h-[600px] text-center p-4">
-          <span className="text-xs font-semibold tracking-wider uppercase text-muted-foreground/60 mb-2">Advertisement</span>
-          <div className="text-sm text-muted-foreground/80">300 x 600 Banner Space</div>
-        </aside>
+        <AdGutter position="right" />
 
       </div>
     </div>

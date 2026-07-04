@@ -11,13 +11,13 @@ import {
 import { Sun, Moon, Contrast, Sparkles, Check } from 'lucide-react'
 
 export function ThemeController() {
-  const { themeMode, contrastLevel, setThemeMode, setContrastLevel } = useTheme()
+  const { themePreference, contrastLevel, setThemePreference, setContrastLevel } = useTheme()
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon" className="relative cursor-pointer transition-transform hover:scale-105 active:scale-95">
-          {themeMode === 'light' ? (
+          {themePreference === 'light' ? (
             <Sun className="h-[1.2rem] w-[1.2rem] transition-all text-primary" />
           ) : (
             <Moon className="h-[1.2rem] w-[1.2rem] transition-all text-primary" />
@@ -27,23 +27,25 @@ export function ThemeController() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         <DropdownMenuLabel>Appearance</DropdownMenuLabel>
+        
         <DropdownMenuItem 
-          onClick={() => setThemeMode('light')} 
+          onClick={() => setThemePreference('light')} 
           className="flex items-center justify-between cursor-pointer"
         >
           <span className="flex items-center gap-2">
             <Sun className="h-4 w-4" /> Light
           </span>
-          {themeMode === 'light' && <Check className="h-4 w-4 text-primary" />}
+          {themePreference === 'light' && <Check className="h-4 w-4 text-primary" />}
         </DropdownMenuItem>
+        
         <DropdownMenuItem 
-          onClick={() => setThemeMode('dark')} 
+          onClick={() => setThemePreference('dark')} 
           className="flex items-center justify-between cursor-pointer"
         >
           <span className="flex items-center gap-2">
             <Moon className="h-4 w-4" /> Dark
           </span>
-          {themeMode === 'dark' && <Check className="h-4 w-4 text-primary" />}
+          {themePreference === 'dark' && <Check className="h-4 w-4 text-primary" />}
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
