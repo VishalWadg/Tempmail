@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Copy, Trash2, Check, Shuffle } from 'lucide-react'
+import { copyToClipboard } from '@/lib/clipboard'   
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,16 +25,13 @@ export function AddressPanel({ email, onRegenerate, onDelete}: AddressPanelProps
   const [copied, setCopied] = useState(false)
 
   // Copy to Clipboard logic
-  const handleCopy = () => {
-    navigator.clipboard.writeText(email)
-      .then(() => {
-        setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
-      })
-      .catch((err) => {
-        console.error('Failed to copy text: ', err)
-      })
-  }
+    const handleCopy = async () => {
+        const success = await copyToClipboard(email)
+        if (success) {
+            setCopied(true)
+            setTimeout(() => setCopied(false), 2000)
+        }
+    }
 
   return (
     <Card className="p-4 md:p-6">

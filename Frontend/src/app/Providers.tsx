@@ -2,6 +2,16 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import themeData from '../material-theme.json'
 import {safeLocalStorage} from '@/lib/storage'
 
+
+// Runtime type guards to validate localStorage values
+function isThemePreference(value: any): value is ThemePreference {
+  return value === 'light' || value === 'dark'
+}
+
+function isContrastLevel(value: any): value is ContrastLevel {
+  return value === 'standard' || value === 'medium' || value === 'high'
+}
+
 type ThemePreference = 'light' | 'dark'
 type ContrastLevel = 'standard' | 'medium' | 'high'
 type SchemeKey = keyof typeof themeData.schemes
@@ -18,13 +28,15 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [themePreference, setThemePreferenceState] = useState<ThemePreference>(() => {
     const saved = safeLocalStorage.getItem('tempmail-theme-preference') as ThemePreference
-    if (saved) return saved
+    if (isThemePreference(saved)) return saved
     // Initial fallback to system preference
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   })
 
   const [contrastLevel, setContrastLevelState] = useState<ContrastLevel>(() => {
-    return (safeLocalStorage.getItem('tempmail-contrast-level') as ContrastLevel) || 'standard'
+    const saved = safeLocalStorage.getItem('tempmail-contrast-level');
+    if (isContrastLevel(saved)) return saved
+    return 'standard'
   })
 
   // Setter wrapper that persists preference
@@ -44,7 +56,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const schemeString = `${themePreference}${contrastLevel === 'standard' ? '' : `-${contrastLevel}-contrast`}`
     const schemeKey = schemeString as SchemeKey
 
-    const scheme = themeData.schemes[schemeKey]
+    const scheme = themeData.schemes[schemeKey] || themeData.schemes.light;
     if (!scheme) return
 
     const root = document.documentElement

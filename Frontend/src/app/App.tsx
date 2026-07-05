@@ -30,7 +30,6 @@ function App() {
         email={email}
         onRegenerate={handleRegenerate}
         onDelete={handleDelete}
-        onRefresh={handleRefresh}
       />
 
       <Card className="flex-1 p-6 min-h-[400px] flex items-center justify-center text-muted-foreground">
