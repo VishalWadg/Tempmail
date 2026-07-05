@@ -4,7 +4,7 @@ import {safeLocalStorage} from '@/lib/storage'
 
 type ThemePreference = 'light' | 'dark'
 type ContrastLevel = 'standard' | 'medium' | 'high'
-
+type SchemeKey = keyof typeof themeData.schemes
 type ThemeContextType = {
   themePreference: ThemePreference
   contrastLevel: ContrastLevel
@@ -41,18 +41,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Effect to apply mapped CSS variables to root based on active preference
   useEffect(() => {
-    let schemeKey = ''
-    if (themePreference === 'light') {
-      if (contrastLevel === 'standard') schemeKey = 'light'
-      else if (contrastLevel === 'medium') schemeKey = 'light-medium-contrast'
-      else schemeKey = 'light-high-contrast'
-    } else {
-      if (contrastLevel === 'standard') schemeKey = 'dark'
-      else if (contrastLevel === 'medium') schemeKey = 'dark-medium-contrast'
-      else schemeKey = 'dark-high-contrast'
-    }
+    const schemeString = `${themePreference}${contrastLevel === 'standard' ? '' : `-${contrastLevel}-contrast`}`
+    const schemeKey = schemeString as SchemeKey
 
-    const scheme = themeData.schemes[schemeKey as keyof typeof themeData.schemes]
+    const scheme = themeData.schemes[schemeKey]
     if (!scheme) return
 
     const root = document.documentElement
