@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card'
 import { AppShell } from '../components/layout/AppShell'
 import { getOrInitEmail, forceRegenerateEmail } from '@/features/inbox/utils/email-generator'
 import { AddressPanel } from '@/features/inbox/components/AddressPanel'
+import { InboxPanel } from '@/features/inbox/components/InboxPanel'
 
 function App() : ReactNode {
   // Initialize state lazily from sessionStorage (no more layout flicker!)
@@ -19,10 +20,7 @@ function App() : ReactNode {
     setEmail(newEmail)
     console.log('Mailbox deleted and fresh address generated:', newEmail)
   }, [])
-  // 3. Callback: Refresh inbox
-  const handleRefresh = useCallback(() => {
-    console.log('Checking for new messages...')
-  }, [])
+  
 
   return (
     <AppShell>
@@ -32,9 +30,7 @@ function App() : ReactNode {
         onDelete={handleDelete}
       />
 
-      <Card className="flex-1 p-6 min-h-[400px] flex items-center justify-center text-muted-foreground">
-        No messages received yet. Waiting for incoming mail...
-      </Card>
+      <InboxPanel email={email} />
     </AppShell>
   )
 }
