@@ -1,9 +1,19 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import themeData from '../material-theme.json'
+import {safeLocalStorage} from '@/lib/storage'
+
+// Runtime type guards to validate localStorage values
+function isThemePreference(value: any): value is ThemePreference {
+  return value === 'light' || value === 'dark'
+}
+
+function isContrastLevel(value: any): value is ContrastLevel {
+  return value === 'standard' || value === 'medium' || value === 'high'
+}
 
 type ThemePreference = 'light' | 'dark'
 type ContrastLevel = 'standard' | 'medium' | 'high'
-
+type SchemeKey = keyof typeof themeData.schemes
 type ThemeContextType = {
   themePreference: ThemePreference
   contrastLevel: ContrastLevel
@@ -13,63 +23,39 @@ type ThemeContextType = {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
-// Safe localStorage wrapper to prevent crashes in restricted privacy contexts
-const safeGetItem = (key: string): string | null => {
-  try {
-    return localStorage.getItem(key)
-  } catch (e) {
-    console.warn('localStorage read blocked by security/privacy settings:', e)
-    return null
-  }
-}
 
-const safeSetItem = (key: string, value: string): void => {
-  try {
-    localStorage.setItem(key, value)
-  } catch (e) {
-    console.warn('localStorage write blocked by security/privacy settings:', e)
-  }
-}
-
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
+export function ThemeProvider({ children }: { children: ReactNode }) {
   const [themePreference, setThemePreferenceState] = useState<ThemePreference>(() => {
-    const saved = safeGetItem('tempmail-theme-preference') as ThemePreference
-    if (saved) return saved
+    const saved = safeLocalStorage.getItem('tempmail-theme-preference') as ThemePreference
+    if (isThemePreference(saved)) return saved
     // Initial fallback to system preference
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   })
 
   const [contrastLevel, setContrastLevelState] = useState<ContrastLevel>(() => {
-    return (safeGetItem('tempmail-contrast-level') as ContrastLevel) || 'standard'
+    const saved = safeLocalStorage.getItem('tempmail-contrast-level');
+    if (isContrastLevel(saved)) return saved
+    return 'standard'
   })
 
   // Setter wrapper that persists preference
   const setThemePreference = (pref: ThemePreference) => {
     setThemePreferenceState(pref)
-    safeSetItem('tempmail-theme-preference', pref)
+    safeLocalStorage.setItem('tempmail-theme-preference', pref)
   }
 
   // Setter wrapper that persists contrast
   const setContrastLevel = (level: ContrastLevel) => {
     setContrastLevelState(level)
-    safeSetItem('tempmail-contrast-level', level)
+    safeLocalStorage.setItem('tempmail-contrast-level', level)
   }
 
   // Effect to apply mapped CSS variables to root based on active preference
   useEffect(() => {
-    let schemeKey = ''
-    if (themePreference === 'light') {
-      if (contrastLevel === 'standard') schemeKey = 'light'
-      else if (contrastLevel === 'medium') schemeKey = 'light-medium-contrast'
-      else schemeKey = 'light-high-contrast'
-    } else {
-      if (contrastLevel === 'standard') schemeKey = 'dark'
-      else if (contrastLevel === 'medium') schemeKey = 'dark-medium-contrast'
-      else schemeKey = 'dark-high-contrast'
-    }
+    const schemeString = `${themePreference}${contrastLevel === 'standard' ? '' : `-${contrastLevel}-contrast`}`
+    const schemeKey = schemeString as SchemeKey
 
-    // @ts-ignore
-    const scheme = themeData.schemes[schemeKey]
+    const scheme = themeData.schemes[schemeKey] || themeData.schemes.light;
     if (!scheme) return
 
     const root = document.documentElement
