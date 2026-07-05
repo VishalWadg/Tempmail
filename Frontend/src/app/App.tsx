@@ -1,10 +1,10 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useState, type ReactNode } from 'react'
 import { Card } from '@/components/ui/card'
 import { AppShell } from '../components/layout/AppShell'
 import { getOrInitEmail, forceRegenerateEmail } from '@/features/inbox/utils/email-generator'
 import { AddressPanel } from '@/features/inbox/components/AddressPanel'
 
-function App() {
+function App() : ReactNode {
   // Initialize state lazily from sessionStorage (no more layout flicker!)
   const [email, setEmail] = useState<string>(() => getOrInitEmail())
   // 1. Callback: Force-regenerate a new address

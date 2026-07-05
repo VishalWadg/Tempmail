@@ -1,7 +1,6 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import themeData from '../material-theme.json'
 import {safeLocalStorage} from '@/lib/storage'
-
 
 // Runtime type guards to validate localStorage values
 function isThemePreference(value: any): value is ThemePreference {
@@ -25,7 +24,7 @@ type ThemeContextType = {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
+export function ThemeProvider({ children }: { children: ReactNode }) {
   const [themePreference, setThemePreferenceState] = useState<ThemePreference>(() => {
     const saved = safeLocalStorage.getItem('tempmail-theme-preference') as ThemePreference
     if (isThemePreference(saved)) return saved
